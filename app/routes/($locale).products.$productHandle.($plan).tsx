@@ -1,7 +1,7 @@
-import {useRef, Suspense} from 'react';
+import {useRef, Suspense, useMemo} from 'react';
 import {Disclosure, Listbox} from '@headlessui/react';
 import {defer, redirect, type LoaderArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, Await} from '@remix-run/react';
+import {useLoaderData, Await, useLocation} from '@remix-run/react';
 import type {ShopifyAnalyticsProduct} from '@shopify/hydrogen';
 import {
   AnalyticsPageType,
@@ -12,6 +12,12 @@ import {
 } from '@shopify/hydrogen';
 import invariant from 'tiny-invariant';
 import clsx from 'clsx';
+import type {
+  MoneyV2,
+  SellingPlan,
+  SellingPlanGroupOption,
+  SellingPlanOption,
+} from '@shopify/hydrogen/storefront-api-types';
 
 import type {
   ProductQuery,
@@ -36,12 +42,15 @@ import {seoPayload} from '~/lib/seo.server';
 import type {Storefront} from '~/lib/type';
 import {routeHeaders} from '~/data/cache';
 import {MEDIA_FRAGMENT, PRODUCT_CARD_FRAGMENT} from '~/data/fragments';
+import {SellingPlanSelector} from '~/components/SellingPlanSelector';
 
 export const headers = routeHeaders;
 
 export async function loader({params, request, context}: LoaderArgs) {
   const {productHandle} = params;
   invariant(productHandle, 'Missing productHandle param, check route filename');
+
+  const {plan} = params;
 
   const selectedOptions = getSelectedProductOptions(request);
 
@@ -59,7 +68,7 @@ export async function loader({params, request, context}: LoaderArgs) {
   }
 
   if (!product.selectedVariant) {
-    return redirectToFirstVariant({product, request});
+    return redirectToFirstVariant({plan, product, request});
   }
 
   // In order to show which variants are available in the UI, we need to query
@@ -99,6 +108,7 @@ export async function loader({params, request, context}: LoaderArgs) {
 
   return defer({
     variants,
+    plan,
     product,
     shop,
     storeDomain: shop.primaryDomain.url,
@@ -113,10 +123,63 @@ export async function loader({params, request, context}: LoaderArgs) {
   });
 }
 
+function injectPlan({
+  plan,
+  originalURL,
+}: {
+  plan: string | undefined;
+  originalURL: string;
+}): string {
+  let newURL = originalURL;
+
+  if (plan) {
+    newURL =
+      originalURL.slice(0, originalURL.indexOf('?')) +
+      '/' +
+      plan +
+      originalURL.slice(originalURL.indexOf('?'));
+  }
+
+  return newURL;
+}
+
+function getSelectedPlan({
+  plan,
+  product,
+}: {
+  plan: string | undefined;
+  product: ProductQuery['product'];
+}): {
+  selectedPlanId: string | undefined;
+  selectedPlanPrice: MoneyV2 | undefined;
+} {
+  const [k, v] = plan ? plan.split(':') : [];
+  const obj = {
+    [k]: v,
+  };
+
+  const selectedPlan =
+    product?.sellingPlanGroups.nodes[0]?.sellingPlans.nodes.find(
+      (sellingPlan) =>
+        sellingPlan?.options.every((option) => {
+          const key = option?.name?.replace(/ /g, '_') ?? '';
+          return obj[key] === option?.value?.replace(/ /g, '_');
+        }),
+    );
+
+  return {
+    selectedPlanId: selectedPlan?.id,
+    // @ts-ignore, currently refuses to accept price exists
+    selectedPlanPrice: selectedPlan?.priceAdjustments[0]?.adjustmentValue?.price,
+  };
+}
+
 function redirectToFirstVariant({
+  plan,
   product,
   request,
 }: {
+  plan: string | undefined;
   product: ProductQuery['product'];
   request: Request;
 }) {
@@ -127,7 +190,10 @@ function redirectToFirstVariant({
   }
 
   throw redirect(
-    `/products/${product!.handle}?${searchParams.toString()}`,
+    injectPlan({
+      plan,
+      originalURL: `/products/${product!.handle}?${searchParams.toString()}`,
+    }),
     302,
   );
 }
@@ -212,7 +278,8 @@ export function ProductForm({
 }: {
   variants: ProductVariantFragmentFragment[];
 }) {
-  const {product, analytics, storeDomain} = useLoaderData<typeof loader>();
+  const {plan, product, analytics, storeDomain} =
+    useLoaderData<typeof loader>();
 
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -223,6 +290,9 @@ export function ProductForm({
    */
   const selectedVariant = product.selectedVariant!;
   const isOutOfStock = !selectedVariant?.availableForSale;
+
+  const sellingPlanGroups = product.sellingPlanGroups;
+  const {selectedPlanId, selectedPlanPrice} = getSelectedPlan({plan, product});
 
   const isOnSale =
     selectedVariant?.price?.amount &&
@@ -284,7 +354,10 @@ export function ProductForm({
                                   >
                                     {({active}) => (
                                       <Link
-                                        to={to}
+                                        to={injectPlan({
+                                          plan,
+                                          originalURL: to,
+                                        })}
                                         className={clsx(
                                           'text-primary w-full p-2 transition rounded flex justify-start items-center text-left cursor-pointer',
                                           active && 'bg-primary/10',
@@ -313,7 +386,10 @@ export function ProductForm({
                     option.values.map(({value, isAvailable, isActive, to}) => (
                       <Link
                         key={option.name + value}
-                        to={to}
+                        to={injectPlan({
+                          plan,
+                          originalURL: to,
+                        })}
                         preventScrollReset
                         prefetch="intent"
                         replace
@@ -332,6 +408,41 @@ export function ProductForm({
             );
           }}
         </VariantSelector>
+        <SellingPlanSelector
+          handle={product.handle}
+          plan={plan}
+          options={sellingPlanGroups.nodes[0]?.options}
+        >
+          {({option}) => {
+            return (
+              <div
+                key={option.name}
+                className="flex flex-col flex-wrap mb-4 gap-y-2 last:mb-0"
+              >
+                <Heading as="legend" size="lead" className="min-w-[4rem]">
+                  {option.name}
+                </Heading>
+                <div className="flex flex-wrap items-baseline gap-4">
+                  {option.details.map(({value, isActive, path}) => (
+                    <Link
+                      key={option.name + value}
+                      to={path}
+                      preventScrollReset
+                      prefetch="intent"
+                      replace
+                      className={clsx(
+                        'leading-none py-1 border-b-[1.5px] cursor-pointer transition-all duration-200',
+                        isActive ? 'border-primary/50' : 'border-primary/0',
+                      )}
+                    >
+                      {value}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            );
+          }}
+        </SellingPlanSelector>
         {selectedVariant && (
           <div className="grid items-stretch gap-4">
             {isOutOfStock ? (
@@ -343,6 +454,7 @@ export function ProductForm({
                 lines={[
                   {
                     merchandiseId: selectedVariant.id!,
+                    sellingPlanId: selectedPlanId || undefined,
                     quantity: 1,
                   },
                 ]}
@@ -360,13 +472,13 @@ export function ProductForm({
                   <span>Add to Cart</span> <span>·</span>{' '}
                   <Money
                     withoutTrailingZeros
-                    data={selectedVariant?.price!}
+                    data={selectedPlanPrice ?? selectedVariant?.price!}
                     as="span"
                   />
                   {isOnSale && (
                     <Money
                       withoutTrailingZeros
-                      data={selectedVariant?.compareAtPrice!}
+                      data={selectedPlanPrice ?? selectedVariant?.compareAtPrice!}
                       as="span"
                       className="opacity-50 strike"
                     />
@@ -374,13 +486,14 @@ export function ProductForm({
                 </Text>
               </AddToCartButton>
             )}
-            {!isOutOfStock && (
+            {/* ShopPay doesn't seem to support purchases with Selling Plans
+             {!isOutOfStock && (
               <ShopPayButton
                 width="100%"
                 variantIds={[selectedVariant?.id!]}
                 storeDomain={storeDomain}
               />
-            )}
+             )} */}
           </div>
         )}
       </div>
@@ -491,6 +604,47 @@ const PRODUCT_QUERY = `#graphql
         name
         values
       }
+      sellingPlanGroups(first: 1) {
+        nodes {
+          name
+          options {
+            name
+            values
+          }
+          sellingPlans(first: 10) {
+            nodes {
+              id
+              description
+              name
+              recurringDeliveries
+              options {
+                name
+                value
+              }
+              priceAdjustments {
+                adjustmentValue {
+                  __typename
+                  ...on SellingPlanFixedPriceAdjustment {
+                    price {
+                      amount
+                      currencyCode
+                    }
+                  }
+                  ...on SellingPlanFixedAmountPriceAdjustment {
+                    adjustmentAmount {
+                      amount
+                      currencyCode
+                    }
+                  }
+                  ...on SellingPlanPercentagePriceAdjustment {
+                    adjustmentPercentage
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       selectedVariant: variantBySelectedOptions(selectedOptions: $selectedOptions) {
         ...ProductVariantFragment
       }
@@ -508,6 +662,7 @@ const PRODUCT_QUERY = `#graphql
         description
         title
       }
+
     }
     shop {
       name
