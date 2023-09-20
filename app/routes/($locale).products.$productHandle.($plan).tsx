@@ -6,7 +6,6 @@ import type {ShopifyAnalyticsProduct} from '@shopify/hydrogen';
 import {
   AnalyticsPageType,
   Money,
-  ShopPayButton,
   VariantSelector,
   getSelectedProductOptions,
 } from '@shopify/hydrogen';
@@ -526,14 +525,6 @@ export function ProductForm({
                 </Text>
               </AddToCartButton>
             )}
-            {/* ShopPay doesn't seem to support purchases with Selling Plans
-             {!isOutOfStock && (
-              <ShopPayButton
-                width="100%"
-                variantIds={[selectedVariant?.id!]}
-                storeDomain={storeDomain}
-              />
-             )} */}
           </div>
         )}
       </div>
