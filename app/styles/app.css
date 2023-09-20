@@ -129,6 +129,16 @@ shop-pay-button {
         width: calc(100% + 8rem);
       }
     }
+    /* From: https://www.hyperui.dev/components/ecommerce/quantity-inputs */
+    .no-spinner {
+      -moz-appearance: textfield;
+    }
+
+    .no-spinner::-webkit-outer-spin-button,
+    .no-spinner::-webkit-inner-spin-button {
+      margin: 0;
+      -webkit-appearance: none;
+    }
   }
 
   .swimlane {

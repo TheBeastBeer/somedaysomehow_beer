@@ -1,7 +1,7 @@
-import {useRef, Suspense, useMemo} from 'react';
+import {useRef, Suspense} from 'react';
 import {Disclosure, Listbox} from '@headlessui/react';
 import {defer, redirect, type LoaderArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, Await, useLocation} from '@remix-run/react';
+import {useLoaderData, Await} from '@remix-run/react';
 import type {ShopifyAnalyticsProduct} from '@shopify/hydrogen';
 import {
   AnalyticsPageType,
@@ -14,9 +14,6 @@ import invariant from 'tiny-invariant';
 import clsx from 'clsx';
 import type {
   MoneyV2,
-  SellingPlan,
-  SellingPlanGroupOption,
-  SellingPlanOption,
 } from '@shopify/hydrogen/storefront-api-types';
 
 import type {
@@ -43,6 +40,11 @@ import type {Storefront} from '~/lib/type';
 import {routeHeaders} from '~/data/cache';
 import {MEDIA_FRAGMENT, PRODUCT_CARD_FRAGMENT} from '~/data/fragments';
 import {SellingPlanSelector} from '~/components/SellingPlanSelector';
+import {
+  QuantityInput,
+  QuantityProvider,
+  useQuantity,
+} from '~/components/QuantityInput';
 
 export const headers = routeHeaders;
 
@@ -152,6 +154,7 @@ function getSelectedPlan({
 }): {
   selectedPlanId: string | undefined;
   selectedPlanPrice: MoneyV2 | undefined;
+  selectedPlanDiscount: MoneyV2 | undefined;
 } {
   const [k, v] = plan ? plan.split(':') : [];
   const obj = {
@@ -167,10 +170,29 @@ function getSelectedPlan({
         }),
     );
 
+  let selectedPlanPrice, selectedPlanDiscount;
+
+  selectedPlan?.priceAdjustments.forEach((adjustment) => {
+    switch (adjustment.adjustmentValue?.__typename) {
+      case 'SellingPlanFixedAmountPriceAdjustment':
+        selectedPlanPrice = undefined;
+        selectedPlanDiscount = adjustment.adjustmentValue.adjustmentAmount;
+        break;
+      case 'SellingPlanFixedPriceAdjustment':
+        selectedPlanPrice = adjustment.adjustmentValue.price;
+        selectedPlanDiscount = undefined;
+        break;
+      default:
+        selectedPlanPrice = undefined;
+        selectedPlanDiscount = undefined;
+        break;
+    }
+  });
+
   return {
     selectedPlanId: selectedPlan?.id,
-    // @ts-ignore, currently refuses to accept price exists
-    selectedPlanPrice: selectedPlan?.priceAdjustments[0]?.adjustmentValue?.price,
+    selectedPlanPrice,
+    selectedPlanDiscount,
   };
 }
 
@@ -211,7 +233,8 @@ export default function Product() {
             media={media.nodes}
             className="w-full lg:col-span-2"
           />
-          <div className="sticky md:-mb-nav md:top-nav md:-translate-y-nav md:h-screen md:pt-nav hiddenScroll md:overflow-y-scroll">
+          <div className="sticky md:-mb-nav md:top-nav md:-translate-y-nav md:h-screen md:pt-nav hiddenScroll 
+            md:overflow-y-scroll">
             <section className="flex flex-col w-full max-w-xl gap-8 p-6 md:mx-auto md:max-w-sm md:px-0">
               <div className="grid gap-2">
                 <Heading as="h1" className="whitespace-normal">
@@ -221,18 +244,20 @@ export default function Product() {
                   <Text className={'opacity-50 font-medium'}>{vendor}</Text>
                 )}
               </div>
-              <Suspense fallback={<ProductForm variants={[]} />}>
-                <Await
-                  errorElement="There was a problem loading related products"
-                  resolve={variants}
-                >
-                  {(resp) => (
-                    <ProductForm
-                      variants={resp.product?.variants.nodes || []}
-                    />
-                  )}
-                </Await>
-              </Suspense>
+              <QuantityProvider key={product.handle}>
+                <Suspense fallback={<ProductForm variants={[]} />}>
+                  <Await
+                    errorElement="There was a problem loading related products"
+                    resolve={variants}
+                  >
+                    {(resp) => (
+                      <ProductForm
+                        variants={resp.product?.variants.nodes || []}
+                      />
+                    )}
+                  </Await>
+                </Suspense>
+              </QuantityProvider>
               <div className="grid gap-4 py-4">
                 {descriptionHtml && (
                   <ProductDetail
@@ -282,6 +307,7 @@ export function ProductForm({
     useLoaderData<typeof loader>();
 
   const closeRef = useRef<HTMLButtonElement>(null);
+  const {count} = useQuantity();
 
   /**
    * Likewise, we're defaulting to the first variant for purposes
@@ -292,7 +318,7 @@ export function ProductForm({
   const isOutOfStock = !selectedVariant?.availableForSale;
 
   const sellingPlanGroups = product.sellingPlanGroups;
-  const {selectedPlanId, selectedPlanPrice} = getSelectedPlan({plan, product});
+  const {selectedPlanId, selectedPlanPrice, selectedPlanDiscount} = getSelectedPlan({plan, product});
 
   const isOnSale =
     selectedVariant?.price?.amount &&
@@ -341,7 +367,9 @@ export function ProductForm({
                             </Listbox.Button>
                             <Listbox.Options
                               className={clsx(
-                                'border-primary bg-contrast absolute bottom-12 z-30 grid h-48 w-full overflow-y-scroll rounded-t border px-2 py-2 transition-[max-height] duration-150 sm:bottom-auto md:rounded-b md:rounded-t-none md:border-t-0 md:border-b',
+                                'border-primary bg-contrast absolute bottom-12 z-30 grid h-48 w-full' + 
+                                'overflow-y-scroll rounded-t border px-2 py-2 transition-[max-height] duration-150' +
+                                'sm:bottom-auto md:rounded-b md:rounded-t-none md:border-t-0 md:border-b',
                                 open ? 'max-h-48' : 'max-h-0',
                               )}
                             >
@@ -359,7 +387,8 @@ export function ProductForm({
                                           originalURL: to,
                                         })}
                                         className={clsx(
-                                          'text-primary w-full p-2 transition rounded flex justify-start items-center text-left cursor-pointer',
+                                          'text-primary w-full p-2 transition rounded flex justify-start' +
+                                          'items-center text-left cursor-pointer',
                                           active && 'bg-primary/10',
                                         )}
                                         onClick={() => {
@@ -443,6 +472,7 @@ export function ProductForm({
             );
           }}
         </SellingPlanSelector>
+        <QuantityInput />
         {selectedVariant && (
           <div className="grid items-stretch gap-4">
             {isOutOfStock ? (
@@ -455,7 +485,7 @@ export function ProductForm({
                   {
                     merchandiseId: selectedVariant.id!,
                     sellingPlanId: selectedPlanId || undefined,
-                    quantity: 1,
+                    quantity: +count,
                   },
                 ]}
                 variant="primary"
@@ -472,13 +502,23 @@ export function ProductForm({
                   <span>Add to Cart</span> <span>·</span>{' '}
                   <Money
                     withoutTrailingZeros
-                    data={selectedPlanPrice ?? selectedVariant?.price!}
+                    data={{
+                      amount: String(count * +(selectedPlanPrice?.amount ?? 
+                        (+(selectedVariant?.price!.amount) - +(selectedPlanDiscount?.amount || 0)))),
+                      currencyCode: selectedPlanPrice?.currencyCode ?? 
+                        selectedPlanDiscount?.currencyCode ?? selectedVariant?.price!.currencyCode,
+                    }}
                     as="span"
                   />
                   {isOnSale && (
                     <Money
                       withoutTrailingZeros
-                      data={selectedPlanPrice ?? selectedVariant?.compareAtPrice!}
+                      data={{
+                        amount: String(count * +(selectedPlanPrice?.amount ?? 
+                          (+(selectedVariant?.compareAtPrice!.amount) - +(selectedPlanDiscount?.amount || 0)))),
+                        currencyCode: selectedPlanPrice?.currencyCode ?? 
+                          selectedPlanDiscount?.currencyCode ?? selectedVariant?.compareAtPrice!.currencyCode,
+                      }}
                       as="span"
                       className="opacity-50 strike"
                     />
