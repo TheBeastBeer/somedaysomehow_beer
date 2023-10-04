@@ -5,7 +5,7 @@ const QuantityContext = createContext(1);
 export function useQuantity() {
   const context = useContext(QuantityContext);
   if (!context) {
-    throw new Error(`useCount must be used within a CountProvider`)
+    throw new Error(`useCount must be used within a CountProvider`);
   }
 
   // @ts-ignore
@@ -30,18 +30,17 @@ export function useQuantity() {
     setCount,
     increment,
     decrement,
-  }
+  };
 }
 
 export function QuantityProvider(props: any) {
   const [count, setCount] = useState(1);
   const value = useMemo(() => [count, setCount], [count]);
 
-  return <QuantityContext.Provider value={value} {...props} />
+  return <QuantityContext.Provider value={value} {...props} />;
 }
 
 export function QuantityInput() {
-  
   const {count, increment, decrement} = useQuantity();
 
   return (

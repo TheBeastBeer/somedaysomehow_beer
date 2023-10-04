@@ -11,9 +11,7 @@ import {
 } from '@shopify/hydrogen';
 import invariant from 'tiny-invariant';
 import clsx from 'clsx';
-import type {
-  MoneyV2,
-} from '@shopify/hydrogen/storefront-api-types';
+import type {MoneyV2} from '@shopify/hydrogen/storefront-api-types';
 
 import type {
   ProductQuery,
@@ -232,8 +230,10 @@ export default function Product() {
             media={media.nodes}
             className="w-full lg:col-span-2"
           />
-          <div className="sticky md:-mb-nav md:top-nav md:-translate-y-nav md:h-screen md:pt-nav hiddenScroll 
-            md:overflow-y-scroll">
+          <div
+            className="sticky md:-mb-nav md:top-nav md:-translate-y-nav md:h-screen md:pt-nav hiddenScroll 
+            md:overflow-y-scroll"
+          >
             <section className="flex flex-col w-full max-w-xl gap-8 p-6 md:mx-auto md:max-w-sm md:px-0">
               <div className="grid gap-2">
                 <Heading as="h1" className="whitespace-normal">
@@ -317,7 +317,8 @@ export function ProductForm({
   const isOutOfStock = !selectedVariant?.availableForSale;
 
   const sellingPlanGroups = product.sellingPlanGroups;
-  const {selectedPlanId, selectedPlanPrice, selectedPlanDiscount} = getSelectedPlan({plan, product});
+  const {selectedPlanId, selectedPlanPrice, selectedPlanDiscount} =
+    getSelectedPlan({plan, product});
 
   const isOnSale =
     selectedVariant?.price?.amount &&
@@ -366,9 +367,9 @@ export function ProductForm({
                             </Listbox.Button>
                             <Listbox.Options
                               className={clsx(
-                                'border-primary bg-contrast absolute bottom-12 z-30 grid h-48 w-full' + 
-                                'overflow-y-scroll rounded-t border px-2 py-2 transition-[max-height] duration-150' +
-                                'sm:bottom-auto md:rounded-b md:rounded-t-none md:border-t-0 md:border-b',
+                                'border-primary bg-contrast absolute bottom-12 z-30 grid h-48 w-full' +
+                                  'overflow-y-scroll rounded-t border px-2 py-2 transition-[max-height] duration-150' +
+                                  'sm:bottom-auto md:rounded-b md:rounded-t-none md:border-t-0 md:border-b',
                                 open ? 'max-h-48' : 'max-h-0',
                               )}
                             >
@@ -387,7 +388,7 @@ export function ProductForm({
                                         })}
                                         className={clsx(
                                           'text-primary w-full p-2 transition rounded flex justify-start' +
-                                          'items-center text-left cursor-pointer',
+                                            'items-center text-left cursor-pointer',
                                           active && 'bg-primary/10',
                                         )}
                                         onClick={() => {
@@ -502,10 +503,18 @@ export function ProductForm({
                   <Money
                     withoutTrailingZeros
                     data={{
-                      amount: String(count * +(selectedPlanPrice?.amount ?? 
-                        (+(selectedVariant?.price!.amount) - +(selectedPlanDiscount?.amount || 0)))),
-                      currencyCode: selectedPlanPrice?.currencyCode ?? 
-                        selectedPlanDiscount?.currencyCode ?? selectedVariant?.price!.currencyCode,
+                      amount: String(
+                        count *
+                          Number(
+                            selectedPlanPrice?.amount ??
+                              Number(selectedVariant?.price!.amount) -
+                                Number(selectedPlanDiscount?.amount || 0),
+                          ),
+                      ),
+                      currencyCode:
+                        selectedPlanPrice?.currencyCode ??
+                        selectedPlanDiscount?.currencyCode ??
+                        selectedVariant?.price!.currencyCode,
                     }}
                     as="span"
                   />
@@ -513,10 +522,19 @@ export function ProductForm({
                     <Money
                       withoutTrailingZeros
                       data={{
-                        amount: String(count * +(selectedPlanPrice?.amount ?? 
-                          (+(selectedVariant?.compareAtPrice!.amount) - +(selectedPlanDiscount?.amount || 0)))),
-                        currencyCode: selectedPlanPrice?.currencyCode ?? 
-                          selectedPlanDiscount?.currencyCode ?? selectedVariant?.compareAtPrice!.currencyCode,
+                        amount: String(
+                          count *
+                            Number(
+                              selectedPlanPrice?.amount ??
+                                Number(
+                                  selectedVariant?.compareAtPrice!.amount,
+                                ) - Number(selectedPlanDiscount?.amount || 0),
+                            ),
+                        ),
+                        currencyCode:
+                          selectedPlanPrice?.currencyCode ??
+                          selectedPlanDiscount?.currencyCode ??
+                          selectedVariant?.compareAtPrice!.currencyCode,
                       }}
                       as="span"
                       className="opacity-50 strike"
