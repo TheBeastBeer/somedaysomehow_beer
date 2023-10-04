@@ -63,6 +63,7 @@ export function QuantityInput() {
           type="number"
           id="Quantity"
           value={count}
+          readOnly
           className="text-black h-10 w-16 border-transparent text-center [-moz-appearance:_textfield] sm:text-sm [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none"
         />
 
