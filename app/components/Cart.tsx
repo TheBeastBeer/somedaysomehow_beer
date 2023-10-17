@@ -246,9 +246,14 @@ function CartLineItem({line}: {line: CartLine}) {
 
   if (!line?.id) return null;
 
-  const {id, quantity, merchandise} = line;
+  const {id, quantity, merchandise, sellingPlanAllocation} = line;
 
   if (typeof quantity === 'undefined' || !merchandise?.product) return null;
+
+  const defaultTitle = 
+  (merchandise.selectedOptions.length === 1 &&
+    merchandise.selectedOptions[0].name === "Title" &&
+    merchandise.selectedOptions[0].value === "Default Title");
 
   return (
     <li
@@ -284,13 +289,22 @@ function CartLineItem({line}: {line: CartLine}) {
             )}
           </Heading>
 
+          {!defaultTitle && 
+            (<div className="grid pb-2">
+              {(merchandise?.selectedOptions || []).map((option) => (
+                <Text color="subtle" key={option.name}>
+                  {option.name}: {option.value}
+                </Text>
+              ))}
+            </div>)}
+
           <div className="grid pb-2">
-            {(merchandise?.selectedOptions || []).map((option) => (
-              <Text color="subtle" key={option.name}>
-                {option.name}: {option.value}
-              </Text>
-            ))}
-          </div>
+              {(sellingPlanAllocation?.sellingPlan.options || []).map((option) => (
+                <Text color="subtle" key={option.name}>
+                  {option.name} {option.value}
+                </Text>
+              ))}
+            </div>
 
           <div className="flex items-center gap-2">
             <div className="flex justify-start text-copy">

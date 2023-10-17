@@ -11,7 +11,7 @@ import {
 } from '@shopify/hydrogen';
 import invariant from 'tiny-invariant';
 import clsx from 'clsx';
-import type {MoneyV2} from '@shopify/hydrogen/storefront-api-types';
+import type {MoneyV2, SelectedOptionInput} from '@shopify/hydrogen/storefront-api-types';
 
 import type {
   ProductQuery,
@@ -51,7 +51,13 @@ export async function loader({params, request, context}: LoaderArgs) {
 
   const {plan} = params;
 
-  const selectedOptions = getSelectedProductOptions(request);
+  let selectedOptions = getSelectedProductOptions(request);
+  if (selectedOptions.length === 0) {
+    selectedOptions = [{
+      name: "Title",
+      value: "Default Title",
+    }];
+  }
 
   const {shop, product} = await context.storefront.query(PRODUCT_QUERY, {
     variables: {
