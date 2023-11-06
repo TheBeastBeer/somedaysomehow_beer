@@ -20,7 +20,7 @@ export async function loader({request, params, context}: LoaderFunctionArgs) {
     pageBy: 8,
   });
 
-  if (!handle) {
+  if (!handle || handle === 'all') {
     return redirect('/collections');
   }
 
