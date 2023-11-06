@@ -6,3 +6,6 @@ node_modules
 /.mf
 .env
 .shopify
+
+# macOS related files
+.DS_Store
