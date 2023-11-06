@@ -42,7 +42,10 @@ export default function Collection() {
   return (
     <div className="collection">
       <h1>{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
+      <p
+        className="collection-description"
+        dangerouslySetInnerHTML={{__html: collection.descriptionHtml}}
+      ></p>
       <Pagination connection={collection.products}>
         {({nodes, isLoading, PreviousLink, NextLink}) => (
           <>
@@ -162,6 +165,7 @@ const COLLECTION_QUERY = `#graphql
       handle
       title
       description
+      descriptionHtml
       products(
         first: $first,
         last: $last,
