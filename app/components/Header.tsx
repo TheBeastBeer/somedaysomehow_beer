@@ -13,7 +13,10 @@ export function Header({header, isLoggedIn, cart}: HeaderProps) {
   return (
     <header className="header">
       <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
+        <img
+          src="/images/someday_somehow_symbol_logo_gluten_free.svg"
+          alt="Someday Somehow symbol logo"
+        />
       </NavLink>
       <HeaderMenu
         menu={menu}
