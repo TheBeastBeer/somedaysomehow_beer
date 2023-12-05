@@ -6,7 +6,6 @@ import type {MoneyV2, Product} from '@shopify/hydrogen/storefront-api-types';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 import {Text, Link, AddToCartButton, Button} from '~/components';
 import {isDiscounted, isNewArrival} from '~/lib/utils';
-import {getProductPlaceholder} from '~/lib/placeholders';
 
 export function ProductCard({
   product,
@@ -25,9 +24,9 @@ export function ProductCard({
 }) {
   let cardLabel;
 
-  const cardProduct: Product = product?.variants
+  const cardProduct: Product | null = product?.variants
     ? (product as Product)
-    : getProductPlaceholder();
+    : null;
   if (!cardProduct?.variants?.nodes?.length) return null;
 
   const firstVariant = flattenConnection(cardProduct.variants)[0];

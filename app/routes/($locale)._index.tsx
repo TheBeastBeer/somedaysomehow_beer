@@ -5,7 +5,6 @@ import {AnalyticsPageType} from '@shopify/hydrogen';
 
 import {ProductSwimlane, FeaturedCollections, Hero} from '~/components';
 import {MEDIA_FRAGMENT, PRODUCT_CARD_FRAGMENT} from '~/data/fragments';
-import {getHeroPlaceholder} from '~/lib/placeholders';
 import {seoPayload} from '~/lib/seo.server';
 import {routeHeaders} from '~/data/cache';
 
@@ -84,9 +83,6 @@ export default function Homepage() {
     featuredProducts,
   } = useLoaderData<typeof loader>();
 
-  // TODO: skeletons vs placeholders
-  const skeletons = getHeroPlaceholder([{}, {}, {}]);
-
   return (
     <>
       {primaryHero && (
@@ -111,7 +107,7 @@ export default function Homepage() {
       )}
 
       {secondaryHero && (
-        <Suspense fallback={<Hero {...skeletons[1]} />}>
+        <Suspense fallback={<></>}>
           <Await resolve={secondaryHero}>
             {({hero}) => {
               if (!hero) return <></>;
@@ -138,7 +134,7 @@ export default function Homepage() {
       )}
 
       {tertiaryHero && (
-        <Suspense fallback={<Hero {...skeletons[2]} />}>
+        <Suspense fallback={<></>}>
           <Await resolve={tertiaryHero}>
             {({hero}) => {
               if (!hero) return <></>;

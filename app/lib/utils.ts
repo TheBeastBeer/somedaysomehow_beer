@@ -1,5 +1,9 @@
 import {useLocation, useMatches} from '@remix-run/react';
-import type {MoneyV2} from '@shopify/hydrogen/storefront-api-types';
+import type {
+  MoneyV2,
+  SelectedOption,
+  SelectedOptionInput,
+} from '@shopify/hydrogen/storefront-api-types';
 import typographicBase from 'typographic-base';
 
 import {useRootLoaderData} from '~/root';
@@ -334,6 +338,23 @@ export function isLocalPath(url: string) {
     // a path, which will be the current domain.
     new URL(url);
   } catch (e) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Validates if there is only one variant and it is the default
+ * @param options
+ * @returns `true` if variant is default and `false` otherwise
+ */
+export function isDefaultVariant(options: SelectedOption[]): boolean {
+  if (
+    options.length === 1 &&
+    options[0].name === 'Title' &&
+    options[0].value === 'Default Title'
+  ) {
     return true;
   }
 

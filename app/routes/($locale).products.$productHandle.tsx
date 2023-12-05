@@ -31,7 +31,7 @@ import {
   AddToCartButton,
   Button,
 } from '~/components';
-import {getExcerpt} from '~/lib/utils';
+import {getExcerpt, isDefaultVariant} from '~/lib/utils';
 import {seoPayload} from '~/lib/seo.server';
 import type {Storefront} from '~/lib/type';
 import {routeHeaders} from '~/data/cache';
@@ -43,7 +43,19 @@ export async function loader({params, request, context}: LoaderFunctionArgs) {
   const {productHandle} = params;
   invariant(productHandle, 'Missing productHandle param, check route filename');
 
-  const selectedOptions = getSelectedProductOptions(request);
+  const selectedOptions = getSelectedProductOptions(request).filter(
+    (option) =>
+      // Filter out Shopify predictive search query params
+      !option.name.startsWith('_sid') &&
+      !option.name.startsWith('_pos') &&
+      !option.name.startsWith('_psq') &&
+      !option.name.startsWith('_ss') &&
+      !option.name.startsWith('_v') &&
+      // Filter out third party tracking params
+      !option.name.startsWith('fbclid') &&
+      // Filter out subscription/selling plan params
+      !option.name.startsWith('_sub_'),
+  );
 
   const {shop, product} = await context.storefront.query(PRODUCT_QUERY, {
     variables: {
@@ -58,8 +70,16 @@ export async function loader({params, request, context}: LoaderFunctionArgs) {
     throw new Response('product', {status: 404});
   }
 
-  if (!product.selectedVariant) {
-    throw redirectToFirstVariant({product, request});
+  const firstVariant = product.variants.nodes[0];
+
+  if (isDefaultVariant(firstVariant.selectedOptions)) {
+    product.selectedVariant = firstVariant;
+  } else {
+    // if no selected variant was returned from the selected options,
+    // we redirect to the first variant's url with it's selected options applied
+    if (!product.selectedVariant) {
+      throw redirectToFirstVariant({product, request});
+    }
   }
 
   // In order to show which variants are available in the UI, we need to query
@@ -77,10 +97,7 @@ export async function loader({params, request, context}: LoaderFunctionArgs) {
 
   const recommended = getRecommendedProducts(context.storefront, product.id);
 
-  // TODO: firstVariant is never used because we will always have a selectedVariant due to redirect
-  // Investigate if we can avoid the redirect for product pages with no search params for first variant
-  const firstVariant = product.variants.nodes[0];
-  const selectedVariant = product.selectedVariant ?? firstVariant;
+  const selectedVariant = product.selectedVariant;
 
   const productAnalytics: ShopifyAnalyticsProduct = {
     productGid: product.id,
