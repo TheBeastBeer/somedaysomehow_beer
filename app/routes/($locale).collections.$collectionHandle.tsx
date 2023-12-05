@@ -151,13 +151,12 @@ export default function Collection() {
   return (
     <>
       <PageHeader heading={collection.title}>
-        {collection?.description && (
+        {collection?.descriptionHtml && (
           <div className="flex items-baseline justify-between w-full">
-            <div>
-              <Text format width="narrow" as="p" className="inline-block">
-                {collection.description}
-              </Text>
-            </div>
+            <div
+              className="prose dark:prose-invert"
+              dangerouslySetInnerHTML={{__html: collection.descriptionHtml}}
+            />
           </div>
         )}
       </PageHeader>
@@ -264,7 +263,7 @@ const COLLECTION_QUERY = `#graphql
       id
       handle
       title
-      description
+      descriptionHtml
       seo {
         description
         title
