@@ -100,7 +100,12 @@ export default function OrderRoute() {
                 <p>Subtotal</p>
               </th>
               <td>
-                <Money data={order.subtotalPriceV2!} />
+                <Money
+                  data={order.subtotalPriceV2!}
+                  withoutCurrency
+                  withoutTrailingZeros
+                  className="money-number"
+                />
               </td>
             </tr>
             <tr>
@@ -111,7 +116,12 @@ export default function OrderRoute() {
                 <p>Tax</p>
               </th>
               <td>
-                <Money data={order.totalTaxV2!} />
+                <Money
+                  data={order.totalTaxV2!}
+                  withoutCurrency
+                  withoutTrailingZeros
+                  className="money-number"
+                />
               </td>
             </tr>
             <tr>
@@ -122,7 +132,12 @@ export default function OrderRoute() {
                 <p>Total</p>
               </th>
               <td>
-                <Money data={order.totalPriceV2!} />
+                <Money
+                  data={order.totalPriceV2!}
+                  withoutCurrency
+                  withoutTrailingZeros
+                  className="money-number"
+                />
               </td>
             </tr>
           </tfoot>
@@ -182,11 +197,21 @@ function OrderLineRow({lineItem}: {lineItem: OrderLineItemFullFragment}) {
         </div>
       </td>
       <td>
-        <Money data={lineItem.variant!.price!} />
+        <Money
+          data={lineItem.variant!.price!}
+          withoutCurrency
+          withoutTrailingZeros
+          className="money-number"
+        />
       </td>
       <td>{lineItem.quantity}</td>
       <td>
-        <Money data={lineItem.discountedTotalPrice!} />
+        <Money
+          data={lineItem.discountedTotalPrice!}
+          withoutCurrency
+          withoutTrailingZeros
+          className="money-number"
+        />
       </td>
     </tr>
   );

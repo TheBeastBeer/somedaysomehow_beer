@@ -28,7 +28,7 @@ import type {
 import {getVariantUrl} from '~/utils';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `Hydrogen | ${data?.product.title ?? ''}`}];
+  return [{title: `Someday Somehow | ${data?.product.title ?? ''}`}];
 };
 
 export async function loader({params, request, context}: LoaderFunctionArgs) {
@@ -62,10 +62,8 @@ export async function loader({params, request, context}: LoaderFunctionArgs) {
 
   const firstVariant = product.variants.nodes[0];
   const firstVariantIsDefault = Boolean(
-    firstVariant.selectedOptions.find(
-      (option: SelectedOption) =>
-        option.name === 'Title' && option.value === 'Default Title',
-    ),
+    firstVariant.selectedOptions[0].name === 'Title' &&
+      firstVariant.selectedOptions[0].value === 'Default Title',
   );
 
   if (firstVariantIsDefault) {
@@ -206,14 +204,33 @@ function ProductPrice({
           <p>Sale</p>
           <br />
           <div className="product-price-on-sale">
-            {selectedVariant ? <Money data={selectedVariant.price} /> : null}
+            {selectedVariant ? (
+              <Money
+                data={selectedVariant.price}
+                withoutCurrency
+                withoutTrailingZeros
+                className="money-number"
+              />
+            ) : null}
             <s>
-              <Money data={selectedVariant.compareAtPrice} />
+              <Money
+                data={selectedVariant.compareAtPrice}
+                withoutCurrency
+                withoutTrailingZeros
+                className="money-number"
+              />
             </s>
           </div>
         </>
       ) : (
-        selectedVariant?.price && <Money data={selectedVariant?.price} />
+        selectedVariant?.price && (
+          <Money
+            data={selectedVariant?.price}
+            withoutCurrency
+            withoutTrailingZeros
+            className="money-number"
+          />
+        )
       )}
     </div>
   );

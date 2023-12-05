@@ -149,7 +149,11 @@ export function CartSummary({
         <dt>Subtotal</dt>
         <dd>
           {cost?.subtotalAmount?.amount ? (
-            <Money data={cost?.subtotalAmount} />
+            <Money
+              data={cost?.subtotalAmount}
+              withoutCurrency
+              className="money-number"
+            />
           ) : (
             '-'
           )}
@@ -229,7 +233,13 @@ function CartLinePrice({
 
   return (
     <div>
-      <Money withoutTrailingZeros {...passthroughProps} data={moneyV2} />
+      <Money
+        withoutTrailingZeros
+        {...passthroughProps}
+        data={moneyV2}
+        withoutCurrency
+        className="money-number"
+      />
     </div>
   );
 }

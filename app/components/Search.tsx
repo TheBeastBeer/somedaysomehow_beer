@@ -410,7 +410,12 @@ function SearchResultItem({goToSearchResult, item}: SearchResultItemProps) {
           )}
           {item?.price && (
             <small>
-              <Money data={item.price} />
+              <Money
+                data={item.price}
+                withoutCurrency
+                withoutTrailingZeros
+                className="money-number"
+              />
             </small>
           )}
         </div>

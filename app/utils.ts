@@ -40,7 +40,11 @@ export function getVariantUrl({
     searchParams.set(option.name, option.value);
   });
 
-  const searchString = searchParams.toString();
+  const notDefaultVariant =
+    !(
+      selectedOptions[0].name === 'Title' &&
+      selectedOptions[0].value === 'Default Title'
+    ) && searchParams?.toString();
 
-  return path + (searchString ? '?' + searchParams.toString() : '');
+  return path + (notDefaultVariant ? '?' + searchParams.toString() : '');
 }

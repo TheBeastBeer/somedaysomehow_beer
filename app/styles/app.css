@@ -37,6 +37,10 @@ strong {
   font-weight: 550;
 }
 
+.money-number::before {
+  content: "$";
+}
+
 /*
 * --------------------------------------------------
 * components/Aside

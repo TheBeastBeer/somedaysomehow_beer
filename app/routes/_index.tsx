@@ -77,7 +77,12 @@ function RecommendedProducts({
                   />
                   <h4>{product.title}</h4>
                   <small>
-                    <Money data={product.priceRange.minVariantPrice} />
+                    <Money
+                      data={product.priceRange.minVariantPrice}
+                      withoutCurrency
+                      withoutTrailingZeros
+                      className="money-number"
+                    />
                   </small>
                 </Link>
               ))}

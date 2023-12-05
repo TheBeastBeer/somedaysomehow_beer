@@ -110,7 +110,12 @@ function OrderItem({order}: {order: OrderItemFragment}) {
         <p>{new Date(order.processedAt).toDateString()}</p>
         <p>{order.financialStatus}</p>
         <p>{order.fulfillmentStatus}</p>
-        <Money data={order.currentTotalPrice} />
+        <Money
+          data={order.currentTotalPrice}
+          withoutCurrency
+          withoutTrailingZeros
+          className="money-number"
+        />
         <Link to={`/account/orders/${btoa(order.id)}`}>View Order →</Link>
       </fieldset>
       <br />
