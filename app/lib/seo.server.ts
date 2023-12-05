@@ -178,6 +178,7 @@ function product({
   return {
     title: product?.seo?.title ?? product?.title,
     description,
+    url,
     media: selectedVariant?.image,
     jsonLd: productJsonLd({product, selectedVariant, url}),
   };
@@ -441,7 +442,7 @@ function policies({
   return {
     title: 'Policies',
     titleTemplate: '%s | Policies',
-    description: 'Hydroge store policies',
+    description: 'Hydrogen store policies',
     jsonLd: [
       {
         '@context': 'https://schema.org',
