@@ -1,11 +1,10 @@
 node_modules
+/.DS_Store
 /.cache
 /build
 /dist
 /public/build
 /.mf
 .env
+.vscode
 .shopify
-
-# macOS related files
-.DS_Store
