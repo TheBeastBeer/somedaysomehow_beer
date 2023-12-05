@@ -20,6 +20,15 @@ body {
   font-family: Montserrat, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+/* 
+ * Need to add `$` before numbers, 
+ * it is removed along with `A` (presumably supposed to be AUD) when using 
+ * `withoutCurrency` on Money components
+ */
+.money-number::before {
+  content: "$";
+}
+
 /* Tokens */
 :root {
   --color-primary: 20 20 20; /* Text, buttons, etc. */

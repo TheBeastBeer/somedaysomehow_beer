@@ -379,13 +379,16 @@ export function ProductForm({
                     withoutTrailingZeros
                     data={selectedVariant?.price!}
                     as="span"
+                    className="money-number"
+                    withoutCurrency
                   />
                   {isOnSale && (
                     <Money
                       withoutTrailingZeros
                       data={selectedVariant?.compareAtPrice!}
                       as="span"
-                      className="opacity-50 strike"
+                      className="opacity-50 strike money-number"
+                      withoutCurrency
                     />
                   )}
                 </Text>

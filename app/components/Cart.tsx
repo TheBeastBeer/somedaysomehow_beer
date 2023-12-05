@@ -24,7 +24,7 @@ import {
   Link,
   FeaturedProducts,
 } from '~/components';
-import {getInputStyleClasses} from '~/lib/utils';
+import {getInputStyleClasses, isDefaultVariant} from '~/lib/utils';
 
 type Layouts = 'page' | 'drawer';
 
@@ -224,7 +224,11 @@ function CartSummary({
           <Text as="dt">Subtotal</Text>
           <Text as="dd" data-test="subtotal">
             {cost?.subtotalAmount?.amount ? (
-              <Money data={cost?.subtotalAmount} />
+              <Money
+                data={cost?.subtotalAmount}
+                className="money-number"
+                withoutCurrency
+              />
             ) : (
               '-'
             )}
@@ -250,10 +254,7 @@ function CartLineItem({line}: {line: CartLine}) {
 
   if (typeof quantity === 'undefined' || !merchandise?.product) return null;
 
-  const defaultTitle = 
-  (merchandise.selectedOptions.length === 1 &&
-    merchandise.selectedOptions[0].name === "Title" &&
-    merchandise.selectedOptions[0].value === "Default Title");
+  const defaultTitle = isDefaultVariant(merchandise.selectedOptions);
 
   return (
     <li
@@ -289,22 +290,25 @@ function CartLineItem({line}: {line: CartLine}) {
             )}
           </Heading>
 
-          {!defaultTitle && 
-            (<div className="grid pb-2">
+          {!defaultTitle && (
+            <div className="grid pb-2">
               {(merchandise?.selectedOptions || []).map((option) => (
                 <Text color="subtle" key={option.name}>
                   {option.name}: {option.value}
                 </Text>
               ))}
-            </div>)}
+            </div>
+          )}
 
           <div className="grid pb-2">
-              {(sellingPlanAllocation?.sellingPlan.options || []).map((option) => (
+            {(sellingPlanAllocation?.sellingPlan.options || []).map(
+              (option) => (
                 <Text color="subtle" key={option.name}>
                   {option.name} {option.value}
                 </Text>
-              ))}
-            </div>
+              ),
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             <div className="flex justify-start text-copy">
@@ -439,7 +443,15 @@ function CartLinePrice({
     return null;
   }
 
-  return <Money withoutTrailingZeros {...passthroughProps} data={moneyV2} />;
+  return (
+    <Money
+      withoutTrailingZeros
+      {...passthroughProps}
+      data={moneyV2}
+      className="money-number"
+      withoutCurrency
+    />
+  );
 }
 
 export function CartEmpty({

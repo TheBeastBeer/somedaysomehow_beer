@@ -145,7 +145,11 @@ export default function OrderRoute() {
                           <dt className="sr-only">Price</dt>
                           <dd className="truncate sm:hidden">
                             <Text size="fine" className="mt-4">
-                              <Money data={lineItem.variant!.price!} />
+                              <Money
+                                data={lineItem.variant!.price!}
+                                className="money-number"
+                                withoutCurrency
+                              />
                             </Text>
                           </dd>
                           <dt className="sr-only">Quantity</dt>
@@ -158,14 +162,22 @@ export default function OrderRoute() {
                       </div>
                     </td>
                     <td className="hidden px-3 py-4 text-right align-top sm:align-middle sm:table-cell">
-                      <Money data={lineItem.variant!.price!} />
+                      <Money
+                        data={lineItem.variant!.price!}
+                        className="money-number"
+                        withoutCurrency
+                      />
                     </td>
                     <td className="hidden px-3 py-4 text-right align-top sm:align-middle sm:table-cell">
                       {lineItem.quantity}
                     </td>
                     <td className="px-3 py-4 text-right align-top sm:align-middle sm:table-cell">
                       <Text>
-                        <Money data={lineItem.discountedTotalPrice!} />
+                        <Money
+                          data={lineItem.discountedTotalPrice!}
+                          className="money-number"
+                          withoutCurrency
+                        />
                       </Text>
                     </td>
                   </tr>
@@ -194,7 +206,13 @@ export default function OrderRoute() {
                           -{discountPercentage}% OFF
                         </span>
                       ) : (
-                        discountValue && <Money data={discountValue!} />
+                        discountValue && (
+                          <Money
+                            data={discountValue!}
+                            className="money-number"
+                            withoutCurrency
+                          />
+                        )
                       )}
                     </td>
                   </tr>
@@ -214,7 +232,11 @@ export default function OrderRoute() {
                     <Text>Subtotal</Text>
                   </th>
                   <td className="pt-6 pl-3 pr-4 text-right md:pr-3">
-                    <Money data={order.subtotalPriceV2!} />
+                    <Money
+                      data={order.subtotalPriceV2!}
+                      className="money-number"
+                      withoutCurrency
+                    />
                   </td>
                 </tr>
                 <tr>
@@ -232,7 +254,11 @@ export default function OrderRoute() {
                     <Text>Tax</Text>
                   </th>
                   <td className="pt-4 pl-3 pr-4 text-right md:pr-3">
-                    <Money data={order.totalTaxV2!} />
+                    <Money
+                      data={order.totalTaxV2!}
+                      className="money-number"
+                      withoutCurrency
+                    />
                   </td>
                 </tr>
                 <tr>
@@ -250,7 +276,11 @@ export default function OrderRoute() {
                     <Text>Total</Text>
                   </th>
                   <td className="pt-4 pl-3 pr-4 font-semibold text-right md:pr-3">
-                    <Money data={order.totalPriceV2!} />
+                    <Money
+                      data={order.totalPriceV2!}
+                      className="money-number"
+                      withoutCurrency
+                    />
                   </td>
                 </tr>
               </tfoot>
