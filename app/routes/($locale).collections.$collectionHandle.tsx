@@ -154,7 +154,7 @@ export default function Collection() {
         {collection?.descriptionHtml && (
           <div className="flex items-baseline justify-between w-full">
             <div
-              className="prose dark:prose-invert"
+              className="prose"
               dangerouslySetInnerHTML={{__html: collection.descriptionHtml}}
             />
           </div>

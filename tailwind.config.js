@@ -10,6 +10,7 @@ export default {
         primary: 'rgb(var(--color-primary) / <alpha-value>)',
         contrast: 'rgb(var(--color-contrast) / <alpha-value>)',
         notice: 'rgb(var(--color-accent) / <alpha-value>)',
+        menu: 'rgb(var(--color-menu) / <alpha-value>)',
         shopPay: 'rgb(var(--color-shop-pay) / <alpha-value>)',
       },
       screens: {
@@ -48,6 +49,11 @@ export default {
         lead: ['var(--font-size-lead)', '1.333'],
         copy: ['var(--font-size-copy)', '1.5'],
         fine: ['var(--font-size-fine)', '1.333'],
+      },
+      fontWeight: {
+        light: '250',
+        normal: '400',
+        bold: '550',
       },
       maxWidth: {
         'prose-narrow': '45ch',

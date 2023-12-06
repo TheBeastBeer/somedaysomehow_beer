@@ -1,4 +1,4 @@
-import {defer, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {defer, redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {Suspense} from 'react';
 import {Await, useLoaderData} from '@remix-run/react';
 import {AnalyticsPageType} from '@shopify/hydrogen';
@@ -12,13 +12,24 @@ export const headers = routeHeaders;
 
 export async function loader({params, context}: LoaderFunctionArgs) {
   const {language, country} = context.storefront.i18n;
-
+  const {locale: localeOrHandle} = params;
   if (
-    params.locale &&
-    params.locale.toLowerCase() !== `${language}-${country}`.toLowerCase()
+    localeOrHandle &&
+    localeOrHandle.toLowerCase() !== `${language}-${country}`.toLowerCase()
   ) {
     // If the locale URL param is defined, yet we still are on `EN-US`
-    // the the locale param must be invalid, send to the 404 page
+    // the the locale param is probably invalid, or it's a Product Handle
+
+    // await the query for the critical product data
+    const {product} = await context.storefront.query(PRODUCT_QUERY, {
+      variables: {handle: localeOrHandle},
+    });
+
+    if (product?.id) {
+      return redirect(`/products/${localeOrHandle}`);
+    }
+
+    // If there's no matching product, then something's gone wrong -> throw 404
     throw new Response(null, {status: 404});
   }
 
@@ -235,3 +246,14 @@ export const FEATURED_COLLECTIONS_QUERY = `#graphql
     }
   }
 ` as const;
+
+const PRODUCT_QUERY = `#graphql
+query ProductID(
+  $country: CountryCode
+  $handle: String!
+  $language: LanguageCode
+) @inContext(country: $country, language: $language) {
+  product(handle: $handle) {
+    id
+  }
+}` as const;

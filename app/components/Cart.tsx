@@ -219,7 +219,7 @@ function CartSummary({
       <h2 id="summary-heading" className="sr-only">
         Order summary
       </h2>
-      <dl className="grid">
+      <dl className="grid pt-1">
         <div className="flex items-center justify-between font-medium">
           <Text as="dt">Subtotal</Text>
           <Text as="dd" data-test="subtotal">

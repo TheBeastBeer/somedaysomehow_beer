@@ -7,7 +7,7 @@ export function GenericError({
 }: {
   error?: {message: string; stack?: string};
 }) {
-  const heading = `Something’s wrong here.`;
+  const heading = `Something's wrong here.`;
   let description = `We found an error while loading this page.`;
 
   // TODO hide error in prod?
