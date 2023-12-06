@@ -276,7 +276,7 @@ function AccountLink({className}: {className?: string}) {
     </Link>
   ) : (
     <Link to="/account/login" className={className}>
-      <IconLogin className="w-6 h-11 ml-2.5 mr-1.5"/>
+      <IconLogin className="w-6 h-11 ml-3" />
     </Link>
   );
 }
@@ -333,7 +333,7 @@ function Badge({
   const BadgeCounter = useMemo(
     () => (
       <>
-        <IconBag />
+        <IconBag className="w-4 h-11 mx-3.5" />
         <div className="text-menu bg-primary/80 absolute bottom-2.5 right-2.5 text-[0.625rem] font-medium subpixel-antialiased h-3 min-w-[0.75rem] flex items-center justify-center leading-none text-center rounded-full w-auto">
           <span>{count || 0}</span>
         </div>
