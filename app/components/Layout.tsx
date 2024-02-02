@@ -1,6 +1,5 @@
 import clsx from 'clsx';
-import {useParams, Form, Await} from '@remix-run/react';
-import {useWindowScroll} from 'react-use';
+import {useParams, Await} from '@remix-run/react';
 import {Disclosure} from '@headlessui/react';
 import {Suspense, useEffect, useMemo} from 'react';
 import {CartForm} from '@shopify/hydrogen';
@@ -10,7 +9,6 @@ import {
   Drawer,
   useDrawer,
   Text,
-  Input,
   IconLogin,
   IconAccount,
   IconBag,
@@ -19,7 +17,6 @@ import {
   IconMenu,
   IconCaret,
   Section,
-  CountrySelector,
   Cart,
   CartLoading,
   Link,
@@ -370,7 +367,6 @@ function Footer({menu}: {menu?: EnhancedMenu}) {
         bg-primary text-contrast overflow-hidden`}
     >
       <FooterMenu menu={menu} />
-      <CountrySelector />
       <div
         className={`self-end pt-8 opacity-50 md:col-span-2 lg:col-span-${itemsCount}`}
       >
