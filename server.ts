@@ -10,9 +10,10 @@ import {
   createCartHandler,
   createStorefrontClient,
   storefrontRedirect,
+  createCustomerAccountClient,
 } from '@shopify/hydrogen';
 
-import {HydrogenSession} from '~/lib/session.server';
+import {AppSession} from '~/lib/session.server';
 import {getLocaleFromRequest} from '~/lib/utils';
 
 //! @see https://shopify.dev/docs/api/hydrogen/2023-07/utilities/createcarthandler#example-cart-fragments
@@ -154,7 +155,7 @@ export default {
       const waitUntil = executionContext.waitUntil.bind(executionContext);
       const [cache, session] = await Promise.all([
         caches.open('hydrogen'),
-        HydrogenSession.init(request, [env.SESSION_SECRET]),
+        AppSession.init(request, [env.SESSION_SECRET]),
       ]);
 
       /**
@@ -169,6 +170,17 @@ export default {
         storeDomain: env.PUBLIC_STORE_DOMAIN,
         storefrontId: env.PUBLIC_STOREFRONT_ID,
         storefrontHeaders: getStorefrontHeaders(request),
+      });
+
+      /**
+       * Create a client for Customer Account API.
+       */
+      const customerAccount = createCustomerAccountClient({
+        waitUntil,
+        request,
+        session,
+        customerAccountId: env.PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID,
+        customerAccountUrl: env.PUBLIC_CUSTOMER_ACCOUNT_API_URL,
       });
 
       const cart = createCartHandler({
@@ -189,6 +201,7 @@ export default {
           session,
           waitUntil,
           storefront,
+          customerAccount,
           cart,
           env,
         }),

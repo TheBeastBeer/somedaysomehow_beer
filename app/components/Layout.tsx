@@ -1,5 +1,6 @@
 import clsx from 'clsx';
-import {useParams, Await} from '@remix-run/react';
+import {useParams, Form, Await} from '@remix-run/react';
+import {useWindowScroll} from 'react-use';
 import {Disclosure} from '@headlessui/react';
 import {Suspense, useEffect, useMemo} from 'react';
 import {CartForm} from '@shopify/hydrogen';
@@ -9,6 +10,7 @@ import {
   Drawer,
   useDrawer,
   Text,
+  Input,
   IconLogin,
   IconAccount,
   IconBag,
@@ -17,6 +19,7 @@ import {
   IconMenu,
   IconCaret,
   Section,
+  CountrySelector,
   Cart,
   CartLoading,
   Link,
@@ -183,6 +186,8 @@ function MobileHeader({
   openCart: () => void;
   openMenu: () => void;
 }) {
+  // useHeaderStyleFix(containerStyle, setContainerStyle, isHome);
+
   const params = useParams();
 
   return (
@@ -267,13 +272,22 @@ function AccountLink({className}: {className?: string}) {
   const rootData = useRootLoaderData();
   const isLoggedIn = rootData?.isLoggedIn;
 
-  return isLoggedIn ? (
+  return (
     <Link to="/account" className={className}>
-      <IconAccount />
-    </Link>
-  ) : (
-    <Link to="/account/login" className={className}>
-      <IconLogin className="w-6 h-11 ml-3" />
+      <Suspense fallback={<IconLogin className="w-6 h-11 ml-3" />}>
+        <Await
+          resolve={isLoggedIn}
+          errorElement={<IconLogin className="w-6 h-11 ml-3" />}
+        >
+          {(isLoggedIn) =>
+            isLoggedIn ? (
+              <IconAccount className="w-6 h-11 ml-3" />
+            ) : (
+              <IconLogin className="w-6 h-11 ml-3" />
+            )
+          }
+        </Await>
+      </Suspense>
     </Link>
   );
 }

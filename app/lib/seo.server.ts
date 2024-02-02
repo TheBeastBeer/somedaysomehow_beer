@@ -442,7 +442,7 @@ function policies({
   return {
     title: 'Policies',
     titleTemplate: '%s | Policies',
-    description: 'Hydrogen store policies',
+    description: 'Someday Somehow store policies',
     jsonLd: [
       {
         '@context': 'https://schema.org',
@@ -452,7 +452,7 @@ function policies({
       {
         '@context': 'https://schema.org',
         '@type': 'WebPage',
-        description: 'Hydrogen store policies',
+        description: 'Someday Somehow store policies',
         name: 'Policies',
         url,
       },

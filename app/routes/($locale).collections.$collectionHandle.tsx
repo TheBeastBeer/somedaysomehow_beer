@@ -18,7 +18,6 @@ import invariant from 'tiny-invariant';
 import {
   PageHeader,
   Section,
-  Text,
   SortFilter,
   Grid,
   ProductCard,
@@ -27,7 +26,7 @@ import {
 import {PRODUCT_CARD_FRAGMENT} from '~/data/fragments';
 import {routeHeaders} from '~/data/cache';
 import {seoPayload} from '~/lib/seo.server';
-import type {SortParam} from '~/components/SortFilter';
+import type {AppliedFilter, SortParam} from '~/components/SortFilter';
 import {FILTER_URL_PREFIX} from '~/components/SortFilter';
 import {getImageLoadingPriority} from '~/lib/const';
 import {parseAsCurrency} from '~/lib/utils';
@@ -163,8 +162,10 @@ export default function Collection() {
       <Section>
         <SortFilter
           filters={collection.products.filters as Filter[]}
-          appliedFilters={appliedFilters}
-          collections={collections}
+          appliedFilters={appliedFilters as AppliedFilter[]}
+          collections={
+            collections as {handle: string; title: string}[] | undefined
+          }
         >
           <Pagination connection={collection.products}>
             {({
@@ -234,7 +235,7 @@ function ProductsLoadedOnScroll({
   }, [inView, navigate, state, nextPageUrl, hasNextPage]);
 
   return (
-    <Grid layout="products">
+    <Grid layout="products" data-test="product-grid">
       {nodes.map((product: any, i: number) => (
         <ProductCard
           key={product.id}

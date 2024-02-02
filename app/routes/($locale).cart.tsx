@@ -5,25 +5,25 @@ import {
   type ActionFunctionArgs,
   json,
 } from '@shopify/remix-oxygen';
-import {CartForm, type CartQueryData} from '@shopify/hydrogen';
+import {CartForm, type CartQueryDataReturn} from '@shopify/hydrogen';
 
 import {isLocalPath} from '~/lib/utils';
 import {Cart} from '~/components';
 import {useRootLoaderData} from '~/root';
 
 export async function action({request, context}: ActionFunctionArgs) {
-  const {session, cart} = context;
+  const {cart} = context;
 
   const [formData, customerAccessToken] = await Promise.all([
     request.formData(),
-    session.get('customerAccessToken'),
+    context.customerAccount.getAccessToken(),
   ]);
 
   const {action, inputs} = CartForm.getFormInput(formData);
   invariant(action, 'No cartAction defined');
 
   let status = 200;
-  let result: CartQueryData;
+  let result: CartQueryDataReturn;
 
   switch (action) {
     case CartForm.ACTIONS.LinesAdd:
@@ -70,10 +70,14 @@ export async function action({request, context}: ActionFunctionArgs) {
     headers.set('Location', redirectTo);
   }
 
-  const {cart: cartResult, errors} = result;
+  const {cart: cartResult, errors, userErrors} = result;
+
+  headers.append('Set-Cookie', await context.session.commit());
+
   return json(
     {
       cart: cartResult,
+      userErrors,
       errors,
       analytics: {
         cartId,

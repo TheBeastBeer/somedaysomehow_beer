@@ -43,19 +43,7 @@ export async function loader({params, request, context}: LoaderFunctionArgs) {
   const {productHandle} = params;
   invariant(productHandle, 'Missing productHandle param, check route filename');
 
-  const selectedOptions = getSelectedProductOptions(request).filter(
-    (option) =>
-      // Filter out Shopify predictive search query params
-      !option.name.startsWith('_sid') &&
-      !option.name.startsWith('_pos') &&
-      !option.name.startsWith('_psq') &&
-      !option.name.startsWith('_ss') &&
-      !option.name.startsWith('_v') &&
-      // Filter out third party tracking params
-      !option.name.startsWith('fbclid') &&
-      // Filter out subscription/selling plan params
-      !option.name.startsWith('_sub_'),
-  );
+  const selectedOptions = getSelectedProductOptions(request);
 
   const {shop, product} = await context.storefront.query(PRODUCT_QUERY, {
     variables: {
@@ -137,16 +125,17 @@ function redirectToFirstVariant({
   product: ProductQuery['product'];
   request: Request;
 }) {
-  const searchParams = new URLSearchParams(new URL(request.url).search);
+  const url = new URL(request.url);
+  const searchParams = new URLSearchParams(url.search);
+
   const firstVariant = product!.variants.nodes[0];
   for (const option of firstVariant.selectedOptions) {
     searchParams.set(option.name, option.value);
   }
 
-  return redirect(
-    `/products/${product!.handle}?${searchParams.toString()}`,
-    302,
-  );
+  url.search = searchParams.toString();
+
+  return redirect(url.href.replace(url.origin, ''), 302);
 }
 
 export default function Product() {
@@ -379,6 +368,7 @@ export function ProductForm({
                     withoutTrailingZeros
                     data={selectedVariant?.price!}
                     as="span"
+                    data-test="price"
                     className="money-number"
                     withoutCurrency
                   />
@@ -511,7 +501,7 @@ const PRODUCT_QUERY = `#graphql
         name
         values
       }
-      selectedVariant: variantBySelectedOptions(selectedOptions: $selectedOptions) {
+      selectedVariant: variantBySelectedOptions(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {
         ...ProductVariantFragment
       }
       media(first: 7) {
